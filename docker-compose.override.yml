@@ -12,9 +12,3 @@ services:
       NARRATION_PORT: 3000
     ports:
       - "${NARRATION_PORT}:3000"      
-
-  plugin-api:
-    environment:
-      PLUGIN_PORT: 3000
-    ports:
-      - "${PLUGIN_PORT}:3000"            

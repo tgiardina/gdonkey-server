@@ -29,20 +29,6 @@ services:
     volumes:
       - /usr/src/gdonkey/narration-api
 
-  plugin-api:
-    container_name: gdonkey_plugin_api  
-    build:
-      context: .  
-      dockerfile: ./plugin-api/Dockerfile
-    command: bash -c "./wait.sh && npm start"
-    depends_on:
-      - "db"    
-    env_file: ./.env
-    links:
-      - db:db
-    volumes:
-      - /usr/src/gdonkey/plugin-api      
-
   db:
     container_name: gdonkey_db  
     image: mysql:5.7
