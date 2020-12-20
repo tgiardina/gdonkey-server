@@ -1,0 +1,33 @@
+version: "3.3"
+
+services:
+  nginx: 
+    container_name: gdonkey_nginx  
+    image: nginx:latest
+    depends_on:
+      - "auth-api"
+      - "narration-api"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf    
+      - /etc/letsencrypt/:/etc/letsencrypt/
+
+  auth-api:
+    environment:
+      AUTH_PORT: "80"
+    expose:
+      - "80"
+
+  narration-api:
+    environment:
+      NARRATION_PORT: "80"
+    expose:
+      - "80"
+
+  plugin-api:
+    environment:
+      PLUGIN_PORT: "80"
+    expose:
+      - "80"      

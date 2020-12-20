@@ -1,0 +1,69 @@
+version: "3.3"
+
+services:
+  auth-api:
+    container_name: gdonkey_auth_api
+    build:
+      context: .  
+      dockerfile: ./auth-api/Dockerfile
+    command: bash -c "./wait.sh && npm start"
+    depends_on:
+      - "db"    
+    env_file: ./.env
+    links:
+      - db:db
+    volumes:
+      - /usr/src/gdonkey/auth-api
+
+  narration-api:
+    container_name: gdonkey_narration_api  
+    build:
+      context: .  
+      dockerfile: ./narration-api/Dockerfile
+    command: bash -c "./wait.sh && npm start"
+    depends_on:
+      - "db"    
+    env_file: ./.env
+    links:
+      - db:db
+    volumes:
+      - /usr/src/gdonkey/narration-api
+
+  plugin-api:
+    container_name: gdonkey_plugin_api  
+    build:
+      context: .  
+      dockerfile: ./plugin-api/Dockerfile
+    command: bash -c "./wait.sh && npm start"
+    depends_on:
+      - "db"    
+    env_file: ./.env
+    links:
+      - db:db
+    volumes:
+      - /usr/src/gdonkey/plugin-api      
+
+  db:
+    container_name: gdonkey_db  
+    image: mysql:5.7
+    env_file: ./.env        
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql              
+
+  migration:
+    container_name: gdonkey_migration  
+    build:
+      context: .
+      dockerfile: ./db/Dockerfile
+    command: bash -c "./wait.sh && npm run migrate && npm run seed"
+    depends_on:
+      - "db"      
+    env_file: ./.env              
+    links:
+      - db:db      
+    volumes:
+      - /usr/src/gdonkey/db                
+
+volumes:
+  db_data:        

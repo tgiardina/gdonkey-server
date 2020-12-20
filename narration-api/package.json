@@ -1,0 +1,28 @@
+{
+  "name": "narration-api",
+  "version": "0.1.0",
+  "description": "GDonkey narration api",
+  "scripts": {
+    "start": "nodemon src/index.js",
+    "test": "NODE_ENV=test mocha --watch \"./{,!(node_modules)/**/}*.test.js\"",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "express-jwt": "^6.0.0",
+    "express-validator": "^6.6.1",
+    "knex": "^0.21.12",
+    "mysql2": "^2.2.5"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "chai-http": "^4.3.0",
+    "chai-openapi-response-validator": "^0.10.0",
+    "dotenv": "^8.2.0",
+    "eslint": "^7.13.0",
+    "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.2.1",
+    "nodemon": "^2.0.6",
+    "prettier": "^2.1.2"
+  }
+}

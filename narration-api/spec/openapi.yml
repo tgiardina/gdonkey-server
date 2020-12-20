@@ -1,0 +1,1229 @@
+openapi: 3.0.0
+info:
+  description: |
+    A simple REST API for recording poker games.
+  version: '0.0.1'
+  title: GDonkey - Narration API
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: config
+  - name: narration
+paths:
+  /casinos:
+    get:
+      tags: 
+        - config
+      summary: Get casinos.
+      operationId: getCasinos
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinosResponse'    
+  /players:                
+    post:
+      tags:
+        - config
+      summary: Create player.
+      operationId: postPlayer
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerPostRequest'
+        required: true          
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerPostResponse'
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        409:
+          description: Duplicate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerDuplicateError'                
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerUnprocessableError' 
+
+  /casinos/{casinoId}/players:
+    get:
+      tags:
+        - config
+      summary: Get player.
+      operationId: getPlayer
+      parameters:
+        - in: path
+          name: casinoId
+          required: true
+          schema: 
+            type: integer        
+        - in: query
+          name: username
+          required: true
+          schema: 
+            type: string        
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlayerGetResponse'
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'    
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoNotFoundError'    
+
+  /casinos/{casinoId}/players/{id}:
+    patch:
+      tags:
+        - config
+      summary: Patch player.
+      operationId: patchPlayer
+      parameters:
+        - in: path
+          name: casinoId
+          required: true
+          schema: 
+            type: integer        
+        - in: path
+          name: id
+          required: true
+          schema: 
+            type: number
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlayerPatchRequest'
+        required: true                            
+      responses:
+        204:
+          description: OK
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'    
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoNotFoundError'                    
+  /casinos/{casinoId}/tables:     
+    get:
+      tags: 
+        - config
+      summary: Get tables.
+      operationId: getTables
+      parameters:
+        - in: path
+          name: casinoId
+          required: true
+          schema: 
+            type: integer              
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TablesResponse'             
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CasinoNotFoundError'                    
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TablesGetUnprocessableError'                                    
+  /games:  
+    post:
+      tags:
+        - config
+      summary: Create a game.
+      operationId: postGame
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GamePostRequest'
+        required: true            
+      security:
+        - bearerAuth: []
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameResponse'
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError' 
+        409:
+          description: Duplicate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameDuplicateError'
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamePostUnprocessableError'                    
+  /games/{gameId}:  
+    patch:                
+      tags:
+        - config    
+      summary: Sets game end.
+      operationId: patchGame
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema:
+           type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GamePatchRequest'
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameNotFoundError'             
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GamePatchUnprocessableError'                            
+  /games/{gameId}/rake:
+    put:
+      tags:
+        - config
+      summary: Sets rake for a game.
+      operationId: putRake
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: 
+            type: integer                    
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RakePutRequest'
+        required: true
+      security:
+        - bearerAuth: []
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameNotFoundError'   
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RakeUnprocessableError'            
+  /seats:                
+    post:
+      tags:
+        - config
+      summary: Create an active seat.
+      operationId: postSeat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SeatPostRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatResponse'
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatUnprocessableError'    
+  /seats/{seatId}/pocket:                
+    put:
+      tags:
+        - narration
+      summary: Set pocket cards.
+      operationId: putPocket
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PocketPutRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SeatNotFoundError'   
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PocketUnprocessableError'    
+  /actions:
+    post:
+      tags:
+        - narration
+      summary: Create a betting action.
+      operationId: postAction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActionPostRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResponse'
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionUnprocessableError'    
+  /games/{gameId}/flop:
+    put:
+      tags:
+        - narration
+      summary: Set flop for game.
+      operationId: putFlop
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FlopPutRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameNotFoundError'
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlopUnprocessableError'    
+  /games/{gameId}/turn:
+    put:
+      tags:
+        - narration
+      summary: Set turn for game.
+      operationId: putTurn
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TurnPutRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameNotFoundError'
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TurnUnprocessableError'        
+  /games/{gameId}/river:                
+    put:
+      tags:
+        - narration
+      summary: Set river for game.
+      operationId: putRiver
+      parameters:
+        - in: path
+          name: gameId
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiverPutRequest'
+        required: true
+      security:
+        - bearerAuth: []      
+      responses:
+        204:
+          description: Updated
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthenticatedError'
+        403:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'     
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameNotFoundError'
+        422:
+          description: Unprocessable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlopUnprocessableError'      
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CasinosResponse:
+      type: object
+      required:
+        - casinos
+      properties:
+        casinos:
+          type: array
+          items:
+            type: object
+            required:
+              - id 
+              - name
+            properties:
+              id: 
+                $ref: '#/components/schemas/PrimaryId'
+              name:
+                type: string
+          example: [{ id: 1, name: "bovada"}, { id: 2, name: "gpokr"}]
+    PlayerPostRequest:
+      type: object
+      required:
+        - player
+      properties:
+        player:
+          type: object
+          required:
+            - username
+            - casinoId
+          properties:
+            username:
+              type: string
+            casinodId:
+              $ref: '#/components/schemas/PrimaryId'              
+    PlayerPostResponse:
+      type: object
+      required:
+        - player
+      properties:
+        player:
+          type: object
+          required:
+            - id
+            - isMe            
+            - username
+            - casinoId
+            - witnessId
+          properties:
+            id:
+              $ref: '#/components/schemas/PrimaryId'
+            isMe:
+              type: boolean
+            username:
+              type: string
+            casinoId:
+              $ref: '#/components/schemas/PrimaryId'
+            witnessId:
+              $ref: '#/components/schemas/PrimaryId'              
+    PlayerGetResponse:
+      type: object
+      required:
+        - players
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - isMe            
+              - username
+              - casinoId
+              - witnessId
+            properties:
+              id:
+                $ref: '#/components/schemas/PrimaryId'
+              isMe:
+                type: boolean
+              username:
+                type: string
+              casinoId:
+                $ref: '#/components/schemas/PrimaryId'
+              witnessId:
+                $ref: '#/components/schemas/PrimaryId'                            
+    PlayerPatchRequest:
+      type: object
+      required:
+        - player
+      properties:
+        player:
+          type: object
+          properties:
+            isMe:
+              type: boolean
+    PlayerDuplicateError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_DUPLICATE
+              location: body
+              resource: player
+              param: username
+              value: string
+    PlayerUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: player
+              param: username
+              value: null                    
+    TablesResponse:
+      type: object
+      required:
+        - tables
+      properties:
+        tables:
+          type: array
+          items:
+            type: object
+            required:
+              - id 
+              - gameType
+              - bigBlind
+              - smallBlind
+            properties:
+              id:
+                $ref: '#/components/schemas/PrimaryId'
+              gameType:
+                type: string
+              bigBlind: 
+                type: integer
+              smallBlind:
+                type: integer
+              tableId:
+                $ref: '#/components/schemas/PrimaryId'
+          example:
+            [{id: 1, gameType: "Cash", bigBlind: 50, smallBlind: 25, casinoId: 1}, {id: 2, gameType: "Zone", bigBlind: 5, smallBlind: 2, casinoId: 1}, {id: 3, gameType: "Zone", bigBlind: 200, smallBlind: 100, casinoId: 1}]
+    TablesGetUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: params
+              resource: games
+              param: id
+              value: 0              
+    GamePostRequest:
+      type: object
+      required:
+        - game
+      properties:
+        game:
+          type: object
+          required: 
+          - extenalId
+          - startedAt
+          - tableId
+          properties:          
+            extenralId:
+              type: string
+            startedAt: 
+              type: string
+              format: date-time
+            endedAt: 
+              type: string
+              format: date-time
+            tableId:
+              $ref: '#/components/schemas/PrimaryId'
+    GameResponse:
+      type: object
+      required:
+        - game
+      properties:
+        game:
+          type: object
+          required:
+            - id
+            - externalId
+            - startedAt
+            - tableId            
+            - witnessId            
+          properties:
+            id:
+              $ref: '#/components/schemas/PrimaryId'
+            externalId:
+              type: string
+            startedAt: 
+              type: string
+              format: date-time
+            endedAt: 
+              type: string
+              format: date-time
+            tableId:
+              $ref: '#/components/schemas/PrimaryId'
+            witnessId:
+              $ref: '#/components/schemas/PrimaryId'
+    GameDuplicateError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_DUPLICATE
+              location: params
+              resource: games
+              param: id
+              value: 1
+    GamePostUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: tableId
+              param: id
+              value: 0         
+    GamePatchRequest:
+      type: object
+      required:
+        - game
+      properties:
+        game:
+          type: object
+          required: 
+          - endedAt
+          properties:          
+            endedAt: 
+              type: string
+              format: date-time
+    GamePatchUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: games
+              param: endedAt
+              value: "today"                 
+    RakePutRequest: 
+      type: object
+      required:
+        - rake
+      properties:
+        rake:
+          type: object
+          required: 
+          - type
+          - amount
+          properties:          
+            type: 
+              type: string
+              enum: ["Pot"]
+            amount:
+              type: integer
+              example: 5
+            max:
+              type: integer
+              example: 25
+    RakeUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: rake
+              param: type
+              value: "Pto"            
+    SeatPostRequest: 
+      type: object
+      required:
+        - seat
+      properties:
+        seat:
+          type: object
+          required: 
+          - position
+          - stack
+          - gameId
+          - playerId
+          properties:          
+            position:
+              $ref: '#/components/schemas/SeatNumber'
+            stack:
+              type: integer
+              minimum: 0
+              example: 1500;
+            gameId:
+              $ref: '#/components/schemas/PrimaryId'
+            playerId:
+              $ref: '#/components/schemas/PrimaryId'
+    SeatResponse:
+      type: object
+      required:
+        - seat
+      properties:
+        seat:
+          type: object
+          required:
+            - id
+            - position
+            - stack
+            - gameId
+            - playerId          
+          properties:
+            id:
+              $ref: '#/components/schemas/PrimaryId'
+            position:
+              $ref: '#/components/schemas/SeatNumber'
+            stack:
+              type: integer
+              minimum: 0
+              example: 1500          
+            gameId:
+              $ref: '#/components/schemas/PrimaryId'
+            playerId:
+              $ref: '#/components/schemas/PrimaryId'
+    SeatUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: seat
+              param: stack
+              value: 0              
+    PocketPutRequest: 
+      type: object
+      required:
+        - pocket
+      properties:
+        pocket:
+          type: object
+          required: 
+          - cards
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+              minItems: 2
+              maxItems: 2
+              example: [
+                { rank: 0, suit: 0 },
+                { rank: 0, suit: 1 }
+              ]
+    PocketResponse: 
+      type: object
+      required:
+        - pocket
+      properties:
+        pocket:
+          type: object
+          required:
+          - cards
+          - seatId          
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+              minItems: 2
+              maxItems: 2
+              example: [
+                { rank: 0, suit: 0 },
+                { rank: 0, suit: 1 }
+              ]              
+            seatId: 
+              $ref: '#/components/schemas/PrimaryId'
+    PocketUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: pocket
+              param: cards
+              value: null      
+
+    ActionPostRequest: 
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: object
+          required: 
+          - type
+          - street
+          - seatId
+          properties:
+            tally:
+              type: integer          
+            type:
+              $ref: '#/components/schemas/ActionType'
+            amount:
+              type: integer
+            delay:
+              type: integer
+            street:
+              $ref: '#/components/schemas/Street'
+            seatId:
+              $ref: '#/components/schemas/PrimaryId'
+    ActionResponse:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: object
+          required:
+            - id
+            - type
+            - amount
+            - delay
+            - street
+            - tally
+            - seatId
+          properties:
+            id:
+              $ref: '#/components/schemas/PrimaryId'
+            type:
+              $ref: '#/components/schemas/ActionType'
+            amount:
+              type: integer
+            delay:
+              type: integer
+              nullable: true
+            street:
+              $ref: '#/components/schemas/Street'
+            streetTally:
+              type: integer
+            seatId:
+              $ref: '#/components/schemas/PrimaryId'
+    ActionUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_INVALID
+              location: body
+              resource: action
+              param: type
+              value: BUY_IN
+    FlopPutRequest: 
+      type: object
+      required:
+        - flop
+      properties:
+        flop:
+          type: object
+          required: 
+          - cards
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+              minItems: 3
+              maxItems: 3
+              example: [
+                { rank: 0, suit: 0 },
+                { rank: 0, suit: 1 },
+                { rank: 0, suit: 2 }                
+              ]
+    FlopUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: flop
+              param: cards
+              input: null                  
+    TurnPutRequest: 
+      type: object
+      required:
+        - flop
+      properties:
+        turn:
+          type: object
+          required: 
+          - cards
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+              minItems: 1
+              maxItems: 1
+              example: [
+                { rank: 0, suit: 3 },
+              ]
+    TurnUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: turn
+              param: cards
+              input: null                                
+    RiverPutRequest: 
+      type: object
+      required:
+        - river
+      properties:
+        river:
+          type: object
+          required: 
+          - cards
+          properties:
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/Card'
+              minItems: 1
+              maxItems: 1
+              example: [
+                { rank: 12, suit: 0 }
+              ]
+    RiverUnprocessableError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNPROCESSABLE
+              location: body
+              resource: river
+              param: cards
+              input: null                                
+    ActionType:
+      type: string
+      enum: [ 'BetRaise', 'CheckCall', 'Donate', 'Fold', 'PostBlind' ]
+      example: 'CheckCall'      
+    Card:   
+      type: object
+      required:
+        - rank
+        - suit
+      properties:
+        rank:
+          $ref: '#/components/schemas/Rank'
+        suit:
+          $ref: '#/components/schemas/Suit'
+    PrimaryId:
+      type: integer
+      minimum: 1
+      example: 1                  
+    Rank:
+      type: number
+      minimum: 0
+      maximum: 12
+    SeatNumber:
+      type: integer
+      minimum: 0
+      maximum: 8
+    Street:
+      type: string
+      enum: [ 'Preflop', 'Flop', 'Turn', 'River' ]
+      example: 'Preflop'    
+    Suit:
+      type: number
+      minimum: 0
+      maximum: 3
+    Error:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - location
+              - resource
+              - value
+            properties:
+              type:
+                type: string
+                enum: [
+                  ER_UNAUTHENTICATED,
+                  ER_UNAUTHORIZED,
+                  ER_NOT_FOUND,                  
+                  ER_DUPLICATE,
+                  ER_UNPROCESSABLE,
+                ]
+              location:
+                type: string
+                enum: [ body, headers, params, query ]
+              resource:
+                type: string
+              param:
+                type: string
+              value:
+                nullable: true              
+                oneOf:
+                  - type: integer
+                  - type: string
+    UnauthenticatedError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNAUTHENTICATED
+              location: headers
+              param: Authorization
+              value: null         
+    UnauthorizedError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_UNAUTHORIZED
+              location: headers
+              param: Authorization
+              value: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9                   
+    CasinoNotFoundError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_NOT_FOUND
+              location: params
+              resource: casinos
+              param: id
+              value: 1              
+    GameNotFoundError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_NOT_FOUND
+              location: params
+              resource: games
+              param: id
+              value: 1                            
+    SeatNotFoundError:
+      allOf:
+      - $ref: '#/components/schemas/Error'
+      - example:
+          errors:
+            - type: ER_NOT_FOUND
+              location: params
+              resource: seats
+              param: id
+              value: 1                            

@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  description: |
+    A simple REST API for GDonkey authentication.
+  version: "0.0.1"
+  title: GDonkey - Auth API
+  license:
+    name: Apache 2.0
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  /users:
+    post:
+      summary: Create a new user.
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserPostRequest"
+      responses:
+        201:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        409:
+          description: Duplicate user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicateError"
+        422:
+          description: Unprocessable login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserUnprocessableError"
+  /sessions:
+    post:
+      summary: Create an access token.
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionPostRequest"
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionResponse"
+        401:
+          description: Unauthenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionUnauthenticatedError"
+        422:
+          description: Unprocessable login
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionUnprocessableError"
+components:
+  schemas:
+    UserPostRequest:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: "#/components/schemas/Auth"
+    UserResponse:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          type: object
+          required:
+            - id
+            - username
+            - token
+          properties:
+            id:
+              $ref: "#/components/schemas/PrimaryId"
+            username:
+              type: string
+              example: username
+            token:
+              type: string
+              example: token
+    SessionPostRequest:
+      type: object
+      required:
+        - session
+      properties:
+        session:
+          $ref: "#/components/schemas/Auth"
+    SessionResponse:
+      type: object
+      required:
+        - session
+      properties:
+        session:
+          type: object
+          required:
+            - username
+            - token
+            - userId
+          properties:
+            username:
+              type: string
+              example: username
+            token:
+              type: string
+              example: token
+            userId:
+              $ref: "#/components/schemas/PrimaryId"
+    DuplicateError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - example:
+            errors:
+              - type: ER_DUPLICATE
+                location: body
+                resource: user
+                property: username
+                value: duplicate
+    UserUnprocessableError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - example:
+            errors:
+              - type: ER_UNPROCESSABLE
+                location: body
+                resource: user
+                property: password
+                value: null
+    SessionUnauthenticatedError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - example:
+            errors:
+              - type: ER_NOT_FOUND
+                location: body
+                resource: session
+                property: password
+                value: "incorrect"
+    SessionUnprocessableError:
+      allOf:
+        - $ref: "#/components/schemas/Error"
+        - example:
+            errors:
+              - type: ER_UNPROCESSABLE
+                location: body
+                resource: session
+                property: password
+                value: null
+    Auth:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: username
+        password:
+          type: string
+          example: password
+    Error:
+      type: object
+      required:
+        - errors
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required:
+              - type
+              - location
+              - resource
+              - value
+            properties:
+              type:
+                type: string
+                enum:
+                  [
+                    ER_UNAUTHENTICATED,
+                    ER_UNAUTHORIZED,
+                    ER_NOT_FOUND,
+                    ER_DUPLICATE,
+                    ER_UNPROCESSABLE,
+                  ]
+              location:
+                type: string
+                enum: [body, headers, params, query]
+              resource:
+                type: string
+              property:
+                type: string
+              value:
+                nullable: true
+                oneOf:
+                  - type: integer
+                  - type: string
+    PrimaryId:
+      type: integer
+      minimum: 1
+      example: 1
