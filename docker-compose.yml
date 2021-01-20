@@ -9,7 +9,7 @@ services:
     command: bash -c "./wait.sh && npm start"
     depends_on:
       - "db"    
-    env_file: ./.env
+    env_file: .env
     links:
       - db:db
     volumes:
@@ -23,7 +23,7 @@ services:
     command: bash -c "./wait.sh && npm start"
     depends_on:
       - "db"    
-    env_file: ./.env
+    env_file: .env
     links:
       - db:db
     volumes:
@@ -32,7 +32,7 @@ services:
   db:
     container_name: gdonkey_db  
     image: mysql:5.7
-    env_file: ./.env        
+    env_file: .env        
     restart: always
     volumes:
       - db_data:/var/lib/mysql              
@@ -42,10 +42,10 @@ services:
     build:
       context: .
       dockerfile: ./db/Dockerfile
-    command: bash -c "./wait.sh && npm run migrate && npm run seed"
+    command: bash -c "./wait.sh && npm run migrate"
     depends_on:
       - "db"      
-    env_file: ./.env              
+    env_file: .env              
     links:
       - db:db      
     volumes:

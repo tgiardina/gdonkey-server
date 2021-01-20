@@ -4,8 +4,7 @@
   "description": "GDonkey's database",
   "private": true,
   "scripts": {
-    "migrate": "knex migrate:latest",
-    "seed": "knex seed:run"
+    "migrate": "knex migrate:latest"
   },
   "devDependencies": {
     "dotenv": "^8.2.0",
